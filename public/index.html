@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ganesh Store — AI Product Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f0e;
+      --surface: #141716;
+      --border: #232825;
+      --border-bright: #2e3530;
+      --text: #e8ede9;
+      --text-dim: #7a8a7c;
+      --text-muted: #4a564c;
+      --green: #4ade80;
+      --green-dim: #16a34a;
+      --green-muted: #0d3d1e;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --accent: #a3e635;
+      --accent-dim: #65a30d;
+      --card: #161a17;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Header ─── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(13, 15, 14, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .hstat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hstat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .hstat-dot.green {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .hstat-dot.amber {
+      background: var(--amber);
+    }
+
+    .hstat-dot.red {
+      background: var(--red);
+    }
+
+    .btn-delete:hover {
+      background: var(--red);
+      color: white;
+      border-color: var(--red);
+    }
+
+    /* ─── Bulk Actions ─── */
+    .bulk-bar {
+      display: none;
+      /* Hidden by default, shown when items are selected */
+      align-items: center;
+      gap: 16px;
+      padding: 12px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .bulk-bar.active {
+      display: flex;
+    }
+
+    .select-all-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+
+    .btn-bulk-delete {
+      background: var(--red);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-bulk-delete:hover {
+      background: #ef4444;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Checkbox */
+    .checkbox-wrap {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+    }
+
+    .checkbox-wrap input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .product-card {
+      position: relative;
+    }
+
+    .product-card .btn-delete-card {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.2s;
+      z-index: 2;
+    }
+
+    .product-card:hover .btn-delete-card {
+      opacity: 1;
+    }
+
+    .product-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .product-row.selected {
+      border-color: var(--accent);
+      background: rgba(163, 230, 53, 0.05);
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-email {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-dim);
+      background: var(--surface);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      color: var(--red);
+      border-color: rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.05);
+    }
+
+    /* ─── Layout ─── */
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 61px);
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 1.5px dashed var(--border-bright);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(163, 230, 53, 0.04);
+    }
+
+    .upload-zone input {
+      display: none;
+    }
+
+    .upload-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 12px;
+      background: var(--green-muted);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: transform 0.2s;
+    }
+
+    .upload-zone:hover .upload-icon {
+      transform: scale(1.08);
+    }
+
+    .upload-zone h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .upload-zone p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .btn-upload {
+      margin-top: 14px;
+      background: var(--accent);
+      color: #0d0f0e;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+
+    .btn-upload:hover {
+      background: #b5f542;
+      transform: translateY(-1px);
+    }
+
+    .btn-upload:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Queue Panel */
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      margin-bottom: 10px;
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .queue-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .queue-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .queue-list::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 2px;
+    }
+
+    .queue-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      transition: border-color 0.2s;
+    }
+
+    .queue-item.done {
+      border-color: rgba(74, 222, 128, 0.25);
+    }
+
+    .queue-item.failed {
+      border-color: rgba(248, 113, 113, 0.25);
+    }
+
+    .queue-item.classifying {
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .qi-name {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 6px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .qi-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    .qi-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+      transition: width 0.5s ease;
+    }
+
+    .qi-fill.done {
+      background: var(--green);
+    }
+
+    .qi-fill.failed {
+      background: var(--red);
+    }
+
+    .qi-fill.classifying {
+      background: var(--amber);
+      animation: pulse-bar 1s infinite;
+    }
+
+    @keyframes pulse-bar {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .qi-status {
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .qi-status .tag {
+      color: var(--green);
+    }
+
+    .qi-status .err {
+      color: var(--red);
+    }
+
+    .qi-status .info {
+      color: var(--amber);
+    }
+
+    /* Category Filter */
+    .cat-filters {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cat-filter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+      font-size: 13px;
+    }
+
+    .cat-filter:hover {
+      background: var(--surface);
+    }
+
+    .cat-filter.active {
+      background: var(--green-muted);
+      border-color: rgba(74, 222, 128, 0.2);
+      color: var(--green);
+    }
+
+    .cat-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cat-icon {
+      font-size: 14px;
+    }
+
+    .cat-count {
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 2px 7px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .cat-filter.active .cat-count {
+      background: var(--green-muted);
+      border-color: rgba(74, 222, 128, 0.3);
+      color: var(--green);
+    }
+
+    /* ─── Main Panel ─── */
+    .main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      flex: 1;
+      max-width: 380px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--border-bright);
+    }
+
+    .search-box span {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .view-btn {
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .view-btn.active {
+      background: var(--border-bright);
+      color: var(--text);
+    }
+
+    .results-info {
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ─── Product Grid ─── */
+    .products-area {
+      padding: 24px 28px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .grid-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: var(--text-muted);
+    }
+
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      padding: 12px;
+    }
+
+    .card-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      background: var(--green-muted);
+      color: var(--green);
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-bottom: 7px;
+      border: 1px solid rgba(74, 222, 128, 0.15);
+    }
+
+    .card-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-tags {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    .confidence-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    /* Product Row - List */
+    .product-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 48px 1fr 120px 120px 90px 40px;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.15s;
+    }
+
+    .product-row:hover {
+      border-color: var(--border-bright);
+    }
+
+    .row-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      overflow: hidden;
+    }
+
+    .row-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .row-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .row-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .pill.green {
+      background: var(--green-muted);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .pill.blue {
+      background: rgba(96, 165, 250, 0.08);
+      color: var(--blue);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+
+    .del-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .del-btn:hover {
+      color: var(--red);
+      border-color: rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.06);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 999;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slide-in 0.25s ease;
+      max-width: 300px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .toast.success {
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .toast.error {
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Pipeline diagram overlay */
+    .pipeline-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      overflow-x: auto;
+    }
+
+    .pipe-step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pipe-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border-bright);
+    }
+
+    .pipe-dot.active {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .pipe-arrow {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* Scrollbar */
+    .products-area::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .products-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .products-area::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://rorwnqjzbnivrtndauof.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvcnducWp6Ym5pdnJ0bmRhdW9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODMwNTIsImV4cCI6MjA5MDE1OTA1Mn0.AtGMk8-z9OgL4JjfQELREmAn_OjS9qRmpMD9GioALPM';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Check auth on page load — redirect to login if no session
+    let _session = null;
+    async function initAuth() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/login.html';
+        return false;
+      }
+      _session = session;
+      const email = session.user.email || 'user';
+      document.getElementById('userEmail').textContent = email;
+      return true;
+    }
+
+    async function handleLogout() {
+      await _supabase.auth.signOut();
+      window.location.href = '/login.html';
+    }
+
+    // Listen for sign out from another tab
+    _supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') window.location.href = '/login.html';
+    });
+  </script>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🏪</div>
+      <div class="logo-text">Ganesh <span>Store</span></div>
+    </div>
+    <div class="header-stats">
+      <div class="hstat">
+        <div class="hstat-dot green" id="h-dot-done"></div><span id="h-done">0 processed</span>
+      </div>
+      <div class="hstat">
+        <div class="hstat-dot amber" id="h-dot-queue"></div><span id="h-queue">0 in queue</span>
+      </div>
+      <div class="hstat">
+        <div class="hstat-dot red"></div><span id="h-failed">0 failed</span>
+      </div>
+    </div>
+    <div class="user-section">
+      <div class="user-email" id="userEmail">...</div>
+      <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Upload Zone -->
+      <div>
+        <div class="section-label">Upload Products</div>
+        <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp">
+          <div class="upload-icon">📤</div>
+          <h3>Drop Images Here</h3>
+          <p>JPEG, PNG, WEBP · max 10MB each</p>
+          <button class="btn-upload" id="uploadBtn" onclick="event.stopPropagation(); triggerUpload()">
+            Select & Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- Queue -->
+      <div>
+        <div class="section-label">Processing Queue <span id="queue-count" style="color:var(--accent)"></span></div>
+        <div class="queue-list" id="queueList">
+          <div
+            style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;text-align:center;padding:12px">
+            No uploads yet
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <div class="section-label">Browse by Category</div>
+        <div class="cat-filters" id="catFilters">
+          <div class="cat-filter active" data-cat="all" onclick="setCategory('all')">
+            <div class="cat-left"><span class="cat-icon">🗂️</span> All Products</div>
+            <span class="cat-count" id="cnt-all">0</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Panel -->
+    <main class="main">
+      <div class="main-header">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" placeholder="Search by tag, category..." id="searchInput" oninput="debounceSearch()">
+        </div>
+        <span class="results-info" id="resultsInfo">0 products</span>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btnGrid" onclick="setView('grid')">⊞</button>
+          <button class="view-btn" id="btnList" onclick="setView('list')">☰</button>
+        </div>
+      </div>
+
+      <div class="bulk-bar" id="bulkBar">
+        <label class="select-all-wrap">
+          <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+          <span>Select All</span>
+        </label>
+        <div class="results-info" id="selectionInfo">0 selected</div>
+        <button class="btn-bulk-delete" onclick="deleteSelected()">Delete Selected</button>
+      </div>
+
+      <div class="products-area" id="productsArea">
+        <div class="empty-state">
+          <div class="empty-icon">📦</div>
+          <h3>No products yet</h3>
+          <p>Upload images to get started</p>
+        </div>
+      </div>
+
+      <!-- Pipeline Status Bar -->
+      <div class="pipeline-bar">
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p1"></div> Upload
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p2"></div> Temp Storage
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p3"></div> Queue
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p4"></div> AI Vision
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p5"></div> Classify
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p6"></div> Rename
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p7"></div> Catalog
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot" id="p8"></div> DB Save
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = 'http://localhost:3001';
+    let activeCategory = 'all';
+    let activeView = 'grid';
+    let searchQuery = '';
+    let trackedJobs = {}; // id -> job info
+    let pollInterval = null;
+    let searchTimeout = null;
+    let selectedIds = new Set();
+    let currentProducts = [];
+
+    const CATEGORY_META = {
+      groceries: { icon: '🥦', label: 'Groceries' },
+      clothing: { icon: '👕', label: 'Clothing' },
+      electronics: { icon: '📱', label: 'Electronics' },
+      household: { icon: '🏠', label: 'Household' },
+      beauty: { icon: '💄', label: 'Beauty' },
+      sports: { icon: '⚽', label: 'Sports' },
+      toys: { icon: '🧸', label: 'Toys' },
+      furniture: { icon: '🛋️', label: 'Furniture' },
+      other: { icon: '📦', label: 'Other' }
+    };
+
+    // ─── File Input ───────────────────────────────────────────────────────────
+    document.getElementById('fileInput').addEventListener('change', e => {
+      if (e.target.files.length) uploadFiles(e.target.files);
+    });
+
+    // Drag & Drop
+    const dz = document.getElementById('dropZone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault();
+      dz.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+    });
+
+    function triggerUpload() {
+      document.getElementById('fileInput').click();
+    }
+    async function getAuthHeaders() {
+      if (!_session) {
+        const { data: { session } } = await _supabase.auth.getSession();
+        _session = session;
+      }
+      if (!_session) return {};
+      return { 'Authorization': `Bearer ${_session.access_token}` };
+    }
+
+    // ─── Upload ────────────────────────────────────────────────────────────────
+    async function uploadFiles(files) {
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      btn.textContent = `Uploading ${files.length} file(s)...`;
+
+      const fd = new FormData();
+      Array.from(files).forEach(f => fd.append('images', f));
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/upload`, {
+          method: 'POST',
+          body: fd,
+          headers: headers
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+        data.jobs.forEach(j => {
+          trackedJobs[j.id] = { originalName: j.originalName, status: 'queued' };
+          addQueueItem(j.id, j.originalName);
+        });
+
+        toast(`✅ ${data.jobs.length} image(s) queued for AI processing`, 'success');
+        startPolling();
+        animatePipeline();
+      } catch (err) {
+        toast(`❌ ${err.message}`, 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Select & Upload';
+      document.getElementById('fileInput').value = '';
+    }
+
+    // ─── Queue UI ──────────────────────────────────────────────────────────────
+    function addQueueItem(id, name) {
+      const list = document.getElementById('queueList');
+      // Clear placeholder
+      if (list.querySelector('div[style]')) list.innerHTML = '';
+
+      const el = document.createElement('div');
+      el.className = 'queue-item';
+      el.id = `qi-${id}`;
+      el.innerHTML = `
+    <div class="qi-name">📄 ${name}</div>
+    <div class="qi-bar"><div class="qi-fill" id="qf-${id}" style="width:5%"></div></div>
+    <div class="qi-status"><span class="info">queued</span><span>5%</span></div>
+  `;
+      list.prepend(el);
+      updateQueueCount();
+    }
+
+    function updateQueueItem(id, statusObj) {
+      const el = document.getElementById(`qi-${id}`);
+      if (!el) return;
+
+      const fill = document.getElementById(`qf-${id}`);
+      const { status, progress, tag, error } = statusObj;
+
+      el.className = `queue-item ${status}`;
+      if (fill) {
+        fill.style.width = `${progress}%`;
+        fill.className = `qi-fill ${status}`;
+      }
+
+      const statusDiv = el.querySelector('.qi-status');
+      if (statusDiv) {
+        let leftText = status;
+        if (status === 'done' && tag) leftText = `<span class="tag">✓ ${tag.replace(/_/g, ' ')}</span>`;
+        else if (status === 'failed') leftText = `<span class="err">✗ failed</span>`;
+        else if (status === 'classifying') leftText = `<span class="info">🤖 AI analyzing...</span>`;
+        else if (status === 'organizing') leftText = `<span class="info">📁 organizing...</span>`;
+        statusDiv.innerHTML = `<span>${leftText}</span><span>${progress}%</span>`;
+      }
+    }
+
+    function updateQueueCount() {
+      const total = Object.keys(trackedJobs).length;
+      const pending = Object.values(trackedJobs).filter(j => j.status !== 'done' && j.status !== 'failed').length;
+      document.getElementById('queue-count').textContent = total ? `(${total})` : '';
+    }
+
+    // ─── Polling ────────────────────────────────────────────────────────────────
+    function startPolling() {
+      if (pollInterval) return;
+      pollInterval = setInterval(pollJobs, 1800);
+    }
+
+    async function pollJobs() {
+      const pending = Object.entries(trackedJobs).filter(([, v]) => v.status !== 'done' && v.status !== 'failed');
+      if (pending.length === 0) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+        return;
+      }
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/status/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...headers
+          },
+          body: JSON.stringify({ ids: pending.map(([id]) => id) })
+        });
+        const statuses = await res.json();
+
+        let anyDone = false;
+        for (const [id, status] of Object.entries(statuses)) {
+          trackedJobs[id] = { ...trackedJobs[id], ...status };
+          updateQueueItem(id, status);
+          if (status.status === 'done') anyDone = true;
+        }
+
+        if (anyDone) { loadProducts(); loadStats(); }
+        updateStats();
+      } catch { }
+    }
+
+    // ─── Products ────────────────────────────────────────────────────────────────
+    async function loadProducts() {
+      const params = new URLSearchParams({ limit: 100 });
+      if (activeCategory !== 'all') params.append('category', activeCategory);
+      if (searchQuery) params.append('search', searchQuery);
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/products?${params}`, {
+          headers: headers
+        });
+        const data = await res.json();
+        currentProducts = data.products || [];
+        renderProducts(currentProducts, data.total || 0);
+        updateBulkUI();
+      } catch {
+        document.getElementById('productsArea').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Cannot connect to server</h3><p>Make sure the backend is running on port 3001</p></div>`;
+      }
+    }
+
+    function renderProducts(products, total) {
+      const area = document.getElementById('productsArea');
+      document.getElementById('resultsInfo').textContent = `${total} product${total !== 1 ? 's' : ''}`;
+
+      if (!products.length) {
+        area.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>No products found</h3><p>Try a different category or search term</p></div>`;
+        return;
+      }
+
+      if (activeView === 'grid') {
+        area.innerHTML = `<div class="grid-view">${products.map(p => cardHTML(p)).join('')}</div>`;
+      } else {
+        area.innerHTML = `<div class="list-view">${products.map(p => rowHTML(p)).join('')}</div>`;
+      }
+    }
+
+    function cardHTML(p) {
+      const isSelected = selectedIds.has(p.id);
+      const meta = CATEGORY_META[p.category] || { icon: '📦', label: p.category };
+      const imgSrc = p.image_url ? `${API}${p.image_url}` : '';
+      const imgEl = imgSrc
+        ? `<img src="${imgSrc}" alt="${p.tags}" loading="lazy" onerror="this.parentElement.innerHTML='${meta.icon}'">`
+        : meta.icon;
+
+      return `
+    <div class="product-card ${isSelected ? 'selected' : ''}" data-id="${p.id}">
+      <div class="checkbox-wrap">
+        <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${p.id}')">
+      </div>
+      <button class="btn-delete-card" onclick="event.stopPropagation(); deleteProduct('${p.id}')" title="Delete product">✕</button>
+      <div class="card-img">${imgEl}</div>
+      <div class="card-body">
+        <div class="card-category">${meta.icon} ${meta.label}</div>
+        <div class="card-name">${p.file_name}</div>
+        <div class="card-tags">${p.tags}</div>
+        <div class="card-meta">
+          <span>${formatTime(p.upload_time)}</span>
+          <span class="confidence-badge">${p.confidence}%</span>
+        </div>
+      </div>
+    </div>`;
+    }
+
+    function rowHTML(p) {
+      const isSelected = selectedIds.has(p.id);
+      const meta = CATEGORY_META[p.category] || { icon: '📦', label: p.category };
+      const imgSrc = p.image_url ? `${API}${p.image_url}` : '';
+      const thumb = imgSrc
+        ? `<div class="row-thumb"><img src="${imgSrc}" alt="" onerror="this.parentElement.innerHTML='${meta.icon}'"></div>`
+        : `<div class="row-thumb">${meta.icon}</div>`;
+
+      return `
+    <div class="product-row ${isSelected ? 'selected' : ''}" data-id="${p.id}">
+      <div class="checkbox-wrap-row" style="margin-right: 10px;">
+        <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${p.id}')">
+      </div>
+      ${thumb}
+      <div>
+        <div class="row-name">${p.file_name}</div>
+        <div class="row-sub">${p.original_name}</div>
+      </div>
+      <div><span class="pill green">${meta.icon} ${meta.label}</span></div>
+      <div><span class="pill blue">${p.tags}</span></div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted)">${formatTime(p.upload_time)}</div>
+      <button class="del-btn" onclick="event.stopPropagation(); deleteProduct('${p.id}')" title="Delete">🗑</button>
+    </div>`;
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/products/${id}`, {
+          method: 'DELETE',
+          headers: headers
+        });
+        if (!res.ok) throw new Error('Delete failed');
+        selectedIds.delete(id);
+        loadProducts();
+        loadStats();
+        toast('🗑️ Product deleted', 'success');
+      } catch (err) {
+        toast('❌ Error deleting product', 'error');
+      }
+    }
+
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else {
+        selectedIds.add(id);
+      }
+      updateBulkUI();
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) {
+        el.classList.toggle('selected');
+        const cb = el.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = selectedIds.has(id);
+      }
+    }
+
+    function toggleSelectAll() {
+      const isAll = document.getElementById('selectAll').checked;
+      if (isAll) {
+        currentProducts.forEach(p => selectedIds.add(p.id));
+      } else {
+        selectedIds.clear();
+      }
+      renderProducts(currentProducts, currentProducts.length);
+      updateBulkUI();
+    }
+
+    function updateBulkUI() {
+      const bar = document.getElementById('bulkBar');
+      const info = document.getElementById('selectionInfo');
+      const count = selectedIds.size;
+
+      if (count > 0) {
+        bar.classList.add('active');
+        info.textContent = `${count} selected`;
+      } else {
+        bar.classList.remove('active');
+      }
+
+      const sa = document.getElementById('selectAll');
+      if (sa) {
+        sa.checked = count > 0 && count === currentProducts.length && currentProducts.length > 0;
+      }
+    }
+
+    async function deleteSelected() {
+      const count = selectedIds.size;
+      if (!count || !confirm(`Delete ${count} selected product(s)?`)) return;
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/products/batch`, {
+          method: 'DELETE',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: Array.from(selectedIds) })
+        });
+
+        if (!res.ok) throw new Error('Failed to delete products');
+
+        toast(`Deleted ${count} product(s)`);
+        selectedIds.clear();
+        loadProducts();
+        loadStats();
+      } catch (err) {
+        toast(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    // ─── Stats & Categories ───────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/stats`, {
+          headers: headers
+        });
+        const stats = await res.json();
+        renderCategories(stats);
+        updateStatsHeader(stats);
+      } catch { }
+    }
+
+    function renderCategories(stats) {
+      const catCounts = {};
+      let total = 0;
+      (stats.categories || []).forEach(c => {
+        catCounts[c.category] = c.count;
+        total += c.count;
+      });
+
+      const el = document.getElementById('catFilters');
+      el.innerHTML = `
+    <div class="cat-filter ${activeCategory === 'all' ? 'active' : ''}" data-cat="all" onclick="setCategory('all')">
+      <div class="cat-left"><span class="cat-icon">🗂️</span> All Products</div>
+      <span class="cat-count" id="cnt-all">${total}</span>
+    </div>
+    ${Object.entries(CATEGORY_META).filter(([k]) => catCounts[k]).map(([k, m]) => `
+      <div class="cat-filter ${activeCategory === k ? 'active' : ''}" data-cat="${k}" onclick="setCategory('${k}')">
+        <div class="cat-left"><span class="cat-icon">${m.icon}</span> ${m.label}</div>
+        <span class="cat-count">${catCounts[k] || 0}</span>
+      </div>
+    `).join('')}
+  `;
+    }
+
+    function updateStatsHeader(stats) {
+      document.getElementById('h-done').textContent = `${stats.done} processed`;
+      document.getElementById('h-queue').textContent = `${stats.queued} in queue`;
+      document.getElementById('h-failed').textContent = `${stats.failed} failed`;
+
+      const qdot = document.getElementById('h-dot-queue');
+      qdot.className = `hstat-dot ${stats.queued > 0 ? 'amber' : ''}`;
+    }
+
+    async function updateStats() {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/api/stats`, {
+          headers: headers
+        });
+        const stats = await res.json();
+        updateStatsHeader(stats);
+      } catch { }
+    }
+
+    // ─── UI Helpers ───────────────────────────────────────────────────────────
+    function setCategory(cat) {
+      activeCategory = cat;
+      loadProducts();
+      loadStats();
+    }
+
+    function setView(v) {
+      activeView = v;
+      document.getElementById('btnGrid').className = `view-btn ${v === 'grid' ? 'active' : ''}`;
+      document.getElementById('btnList').className = `view-btn ${v === 'list' ? 'active' : ''}`;
+      loadProducts();
+    }
+
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchQuery = document.getElementById('searchInput').value;
+      searchTimeout = setTimeout(loadProducts, 300);
+    }
+
+    function formatTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    }
+
+    function toast(msg, type = '') {
+      const c = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span>${msg}</span>`;
+      c.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    // Pipeline animation
+    function animatePipeline() {
+      const steps = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
+      steps.forEach((id, i) => {
+        setTimeout(() => {
+          steps.forEach(s => document.getElementById(s).className = 'pipe-dot');
+          document.getElementById(id).className = 'pipe-dot active';
+        }, i * 700);
+      });
+      setTimeout(() => {
+        steps.forEach(s => { document.getElementById(s).className = 'pipe-dot'; });
+      }, steps.length * 700 + 500);
+    }
+
+    // ─── Init ────────────────────────────────────────────────────────────────
+    initAuth().then(ok => {
+      if (!ok) return; // redirected to login
+      loadProducts();
+      loadStats();
+      setInterval(() => { loadStats(); if (!pollInterval) loadProducts(); }, 10000);
+    });
+  </script>
+</body>
+
+</html>

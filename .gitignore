@@ -1,0 +1,8 @@
+node_modules/
+uploads/temp/
+catalog/
+.DS_Store
+.env
+db.json
+package-lock.json
+*.log

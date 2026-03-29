@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ganesh Store — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0f0e;
+            --surface: #141716;
+            --border: #232825;
+            --border-bright: #2e3530;
+            --text: #e8ede9;
+            --text-dim: #7a8a7c;
+            --text-muted: #4a564c;
+            --green: #4ade80;
+            --green-dim: #16a34a;
+            --green-muted: #0d3d1e;
+            --amber: #fbbf24;
+            --red: #f87171;
+            --accent: #a3e635;
+            --accent-dim: #65a30d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(163, 230, 53, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(163, 230, 53, 0.03) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        /* Glow blob */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(163, 230, 53, 0.06) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border-bright);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 36px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text span {
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+            color: var(--accent);
+            font-weight: 400;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 32px;
+        }
+
+        /* Tab switcher */
+        .tabs {
+            display: flex;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 28px;
+            gap: 3px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 7px;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #0d0f0e;
+        }
+
+        /* Form fields */
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .field input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field input:focus {
+            border-color: var(--accent);
+        }
+
+        .field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--accent);
+            color: #0d0f0e;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-submit:hover {
+            background: #b5f542;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(163, 230, 53, 0.25);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-msg {
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--red);
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            margin-top: 14px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        .success-msg {
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--green);
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            margin-top: 14px;
+            display: none;
+        }
+
+        .success-msg.show {
+            display: block;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .footer-note span {
+            color: var(--accent);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #0d0f0e;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <div class="logo-icon">🏪</div>
+            <div class="logo-text">Ganesh <span>Store</span></div>
+        </div>
+
+        <h1 id="formTitle">Welcome back</h1>
+        <p class="subtitle" id="formSubtitle">Sign in to manage your catalog</p>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+            <button class="tab-btn" id="tabSignUp" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+
+        <form id="authForm" onsubmit="handleSubmit(event)">
+            <div class="field" id="nameField" style="display:none">
+                <label>Full Name</label>
+                <input type="text" id="nameInput" placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="field">
+                <label>Email Address</label>
+                <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Min. 6 characters" required
+                    autocomplete="current-password" minlength="6">
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Sign In</button>
+
+            <div class="error-msg" id="errorMsg"></div>
+            <div class="success-msg" id="successMsg"></div>
+        </form>
+
+        <div class="divider"></div>
+        <p class="footer-note">AI-powered catalog management by <span>Ganesh Store</span></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://rorwnqjzbnivrtndauof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvcnducWp6Ym5pdnJ0bmRhdW9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODMwNTIsImV4cCI6MjA5MDE1OTA1Mn0.AtGMk8-z9OgL4JjfQELREmAn_OjS9qRmpMD9GioALPM';
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentTab = 'signin';
+
+        // If already logged in, redirect to main app
+        _supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) window.location.href = '/';
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const isSignup = tab === 'signup';
+
+            document.getElementById('tabSignIn').className = `tab-btn ${!isSignup ? 'active' : ''}`;
+            document.getElementById('tabSignUp').className = `tab-btn ${isSignup ? 'active' : ''}`;
+
+            document.getElementById('nameField').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('formTitle').textContent = isSignup ? 'Create account' : 'Welcome back';
+            document.getElementById('formSubtitle').textContent = isSignup ? 'Start building your AI catalog' : 'Sign in to manage your catalog';
+            document.getElementById('submitBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
+
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.getElementById('errorMsg').className = 'error-msg';
+            document.getElementById('successMsg').className = 'success-msg';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.className = 'error-msg show';
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = msg;
+            el.className = 'success-msg show';
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            clearMessages();
+
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const btn = document.getElementById('submitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>' + (currentTab === 'signup' ? 'Creating...' : 'Signing in...');
+
+            try {
+                if (currentTab === 'signup') {
+                    const name = document.getElementById('nameInput').value.trim();
+                    const { error } = await _supabase.auth.signUp({
+                        email,
+                        password,
+                        options: { data: { full_name: name } }
+                    });
+                    if (error) throw error;
+                    showSuccess('✅ Account created! Check your email to confirm, then sign in.');
+                    switchTab('signin');
+                } else {
+                    const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    window.location.href = '/';
+                }
+            } catch (err) {
+                showError('❌ ' + (err.message || 'Something went wrong'));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = currentTab === 'signup' ? 'Create Account' : 'Sign In';
+            }
+        }
+    </script>
+</body>
+
+</html>
